@@ -15,10 +15,10 @@
         "totalObservations": "632",
         "displayedObservations": "632",
         "variables": "12",
-        "cacheKey": "AAFB145C",
+        "cacheKey": "B30BB3D6",
         "object": "summary_tbl",
         "environment": "",
-        "contentUrl": "grid_resource/gridviewer.html?env=&obj=summary_tbl&cache_key=AAFB145C&max_display_columns=50",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=summary_tbl&cache_key=B30BB3D6&max_display_columns=50",
         "preview": "0",
         "source_window_id": "",
         "Source": "Source"

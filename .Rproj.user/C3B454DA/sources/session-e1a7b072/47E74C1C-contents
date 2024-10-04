@@ -1,7 +1,9 @@
 ---
-title: "Household Travel Survey Dashboard"
+title: "Travel Survey Explorer"
 author: "Puget Sound Regional Council"
 format: dashboard
+theme: [sandstone, theme/custom.scss]
+logo: images/RegionalGem2016.png
 execute: 
   echo: false
 server: shiny
@@ -13,6 +15,8 @@ library(ggplot2)
 library(psrcplot)
 library(shiny)
 library(dplyr)
+library(gt)
+library(tidyr)
 
 summary_tbl<-readRDS('data/hts_tbl_4_shiny.rds')
 ```
@@ -20,41 +24,48 @@ summary_tbl<-readRDS('data/hts_tbl_4_shiny.rds')
 # { .sidebar}
 
 ```{r}
-selectInput('travel_category', 'Travel Category', unique(summary_tbl$`Travel Category`)) 
-selectInput('demographic_category', 'Demographic Category',unique(summary_tbl$`Demographic Category`))
+selectInput('travel', 'Travel Category', unique(summary_tbl$`Travel Category`)) 
+selectInput('demographic', 'Demographic Category',unique(summary_tbl$`Demographic Category`))
 selectInput('survey_year', 'Year',unique(summary_tbl$survey_year))
 
 ```
 
-# Plot
 
+# Results
 ```{r}
 plotOutput('plot')
+gt_output('data')
 ```
 
-# Data
-
-```{r}
-tableOutput('data')
-```
 
 ```{r}
 #| context: server
 
 dataset<-reactive({
                     summary_tbl%>%
-                    filter(travel_category==input$travel_category&                             demographic_category==input$demographic_category)
+                    filter(`Travel Category`==input$travel&                                             `Demographic Category`==input$demographic,
+                            survey_year==input$survey_year)
 })
 
-output$plot<-renderPlot({
-  p<-interactive_column_chart(dataset(), x='travel_category',  y='prop',fill='demographic_category')
-  
-  
-  
-})
+ output$plot<-renderPlot({
+    interactive_column_chart(dataset(), x='travel_attribute', 
+                                 y='prop',fill='demographic_attribute')
+     })
+
 
 output$data <- renderTable({
-  dataset()
+  dataset()%>%
+    select('travel_attribute', 'demographic_attribute', 'prop', 'prop_moe','est')%>%
+    rename('Travel Value'='travel_attribute')%>%
+    rename('Demographic Value'='demographic_attribute')%>%
+    rename('Share' = 'prop')%>%
+    rename('Share MOE' = 'prop_moe')%>%
+    rename('Total' = 'est')%>%
+    gt()%>%
+    fmt_percent(columns=c('Share', 'Share MOE'), decimals=0)%>%
+    fmt_number(columns='Total', decimals=0)
+    
+    
 })
 ```
 
