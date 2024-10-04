@@ -1,0 +1,60 @@
+---
+title: "Household Travel Survey Dashboard"
+author: "Puget Sound Regional Council"
+format: dashboard
+execute: 
+  echo: false
+server: shiny
+---
+
+```{r}
+#| context: setup
+library(ggplot2)
+library(psrcplot)
+library(shiny)
+library(dplyr)
+
+summary_tbl<-readRDS('data/hts_tbl_4_shiny.rds')
+```
+
+# { .sidebar}
+
+```{r}
+selectInput('travel_category', 'Travel Category', unique(summary_tbl$`Travel Category`)) 
+selectInput('demographic_category', 'Demographic Category',unique(summary_tbl$`Demographic Category`))
+selectInput('survey_year', 'Year',unique(summary_tbl$survey_year))
+
+```
+
+# Plot
+
+```{r}
+plotOutput('plot')
+```
+
+# Data
+
+```{r}
+tableOutput('data')
+```
+
+```{r}
+#| context: server
+
+dataset<-reactive({
+                    summary_tbl%>%
+                    filter(travel_category==input$travel_category&                             demographic_category==input$demographic_category)
+})
+
+output$plot<-renderPlot({
+  p<-interactive_column_chart(dataset(), x='travel_category',  y='prop',fill='demographic_category')
+  
+  
+  
+})
+
+output$data <- renderTable({
+  dataset()
+})
+```
+
